@@ -88,8 +88,8 @@ class handOptions:
     def __init__(self,currentHand):
         self.currentHand = currentHand
 
-    def hitOrPass(self):
-        pass
+    def hit(self):
+        self.currentHand.addCard(theDeck)
 
     def split(self):
         self.hand2 = hand()
@@ -101,22 +101,37 @@ class handOptions:
     def decideAce(self):
         pass
 
+def askPlayer(handoption1):
+    playerInput = input("input your move")
+    if playerInput == "0":                 #Stand and proceed
+        return handoption1.currentHand
+    elif playerInput == "1":
+        handoption1.hit()
+        return handoption1.currentHand
+    elif playerInput == "2":
+        options.split()
+        split1 = handoption1[0]
+        split2 = handoption1[1]
+        return split1,split2
+    else:
+        print("Not valid")
+
+def gamePrep():
+    myHand.addCard(theDeck)
+    dealerHand.addCard(theDeck)
+    myHand.addCard(theDeck)
+    dealerHand.addCard(theDeck)
 
 
 if __name__ == '__main__':
     theDeck = deck()
-    print(theDeck)
     myHand = hand()
-    myHand.addCard(theDeck)
-    myHand.addCard(theDeck)
-    print(myHand)
+    dealerHand = hand()
+    gamePrep()
+    end = False
+    while(end == False):
+        print(f'Dealers hand = {dealerHand.cardsInHand[0]}')
+        print(f'Your hand = {myHand}')
 
-    options = handOptions(myHand)
-    newhands = options.split()
-    hand1 = newhands[0]
-    hand2 = newhands[1]
-
-    hand1.addCard(theDeck)
-    hand2.addCard(theDeck)
-    print(f'hand1 = {hand1}')
-    print(f'hand2 = {hand2}')
+        options = handOptions(myHand)
+        myHand = askPlayer(options)
