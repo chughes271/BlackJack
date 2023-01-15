@@ -84,6 +84,11 @@ class hand:
         self.totalScore = 0
         for card in self.cardsInHand:
             self.totalScore = self.totalScore + card.value
+        if self.totalScore > 21 and "A" in (', '.join(str(c) for c in self.cardsInHand)):
+            for card in self.cardsInHand:
+                if card.value == 11:
+                    card.value = 1
+                    self.totalScore = self.totalScore - 10
         return self.totalScore
 
 class handOptions:
@@ -95,7 +100,7 @@ class handOptions:
         self.currentHand.addCard(theDeck)
 
     def split(self):
-        if self.currentHand.cardsInHand[0] == self.currentHand.cardsInHand[1]:
+        if self.currentHand.cardsInHand[0].value == self.currentHand.cardsInHand[1].value:
 
             self.hand2 = hand()
             self.hand1 = self.currentHand
@@ -107,23 +112,21 @@ class handOptions:
             self.askAgain = askPlayer(options)
             return self.askAgain
 
-    def decideAce(self):
-        pass
-
 def askPlayer(handoption1):
     playerInput = input("input your move")
-    status = False
+    stand = False
     if playerInput == "0":                 #Stand and proceed
-        status = gameClosing()
-        return(handoption1.currentHand,status)
+        stand = gameClosing()
+        return(handoption1.currentHand,stand)
     elif playerInput == "1":
         handoption1.hit()
-        return(handoption1.currentHand,status)
+        return(handoption1.currentHand,stand)
     elif playerInput == "2":
         handoption1 = options.split()
         return(handoption1)
     else:
-        print("Not valid")
+        print("Incorrect input")
+        return(askPlayer(options))
 
 def gamePrep():
     myHand.addCard(theDeck)
@@ -140,30 +143,30 @@ def gameClosing():
     return(True)
 
 
-def gameEnd(player,dealer,status):
-    #print(player,dealer,status)
+def gameEnd(player,dealer,stand):
+    #print(player,dealer,stand)
 
     endGame = False
     win = False
     push = False
 
-    if player > 21:
-        endGame = True
-    else:
+    if player > dealer:
+        if player > 21:
+            endGame = True #lose
+        elif stand == True or player == 21:
+            gameClosing()
+            dealer = dealerHand.handScore()
+            endGame = gameEnd(player,dealer,stand)
+            return endGame
+    elif player < dealer:
         if dealer > 21:
             endGame = True
             win = True
-        elif dealer == 21:
+        elif stand == True:
             endGame = True
-        elif player == 21:
-            status = gameClosing()
-            dealer = dealerHand.handScore()
-    if status == True:
+    elif stand == True:
         endGame = True
-        if player > dealer or dealer > 21:
-            win = True
-        elif player == dealer:
-            push = True
+        push = True
 
     if endGame == True:
         if win == True:
@@ -176,18 +179,20 @@ def gameEnd(player,dealer,status):
     return(endGame)
 
 if __name__ == '__main__':
+    end = False
+    stand = False
+
     theDeck = deck()
     myHand = hand()
+    options = handOptions(myHand)
     dealerHand = hand()
     gamePrep()
-    end = False
-    while(end == False):
-        print(f'Dealers hand = {dealerHand.cardsInHand[0]}')
-        print(f'Your hand = {myHand}')
 
-        options = handOptions(myHand)
-        #checkaces
-        myHand,status = askPlayer(options)
-        end = gameEnd(myHand.handScore(), dealerHand.handScore(),status)
+    while(end == False):
+        end = gameEnd(myHand.handScore(), dealerHand.handScore(),stand)
+        if end != True:
+            print(f'Dealers hand = {dealerHand.cardsInHand[0]}')
+            print(f'Your hand = {myHand}')
+            myHand,stand = askPlayer(options)
 
 
