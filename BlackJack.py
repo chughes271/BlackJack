@@ -1,4 +1,4 @@
-## 1 player game of BlackJack against dealer ##
+## multiplayer game of BlackJack against dealer ##
 import random
 
 class card:
