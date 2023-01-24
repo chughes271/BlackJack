@@ -99,31 +99,34 @@ class handOptions:
     def hit(self):
         self.currentHand.addCard(theDeck)
 
+    #not finished
     def split(self):
-        if self.currentHand.cardsInHand[0].value == self.currentHand.cardsInHand[1].value:
-
-            self.hand2 = hand()
-            self.hand1 = self.currentHand
-            self.hand2.addCard(self.hand1)
-
-            return(self.hand1,self.hand2)
-        else:
-            print("Cannot split your hand")
-            self.askAgain = askPlayer(options)
-            return self.askAgain
+        #if self.currentHand.cardsInHand[0].value == self.currentHand.cardsInHand[1].value:
+        self.hand2 = hand()
+        self.hand1 = self.currentHand
+        self.hand2.addCard(self.hand1)
+        self.combinedHand = [self.hand1,self.hand2]
+        #print(self.combinedHand)
+        #else:
+            #print("Cannot split your hand")
+            #self.askAgain = askPlayer(options)
+            #return self.askAgain
 
 def askPlayer(handoption1):
     playerInput = input("input your move")
     stand = False
+    split = False
     if playerInput == "0":                 #Stand and proceed
         stand = gameClosing()
-        return(handoption1.currentHand,stand)
+        return(handoption1.currentHand,stand,split)
     elif playerInput == "1":
         handoption1.hit()
-        return(handoption1.currentHand,stand)
+        return(handoption1.currentHand,stand,split)
     elif playerInput == "2":
-        handoption1 = options.split()
-        return(handoption1)
+        split = True
+        handoption1.split()
+        print(f'{handoption1.hand1} + {handoption1.hand2}')
+        return([handoption1.hand1,handoption1.hand2],stand,split)
     else:
         print("Incorrect input")
         return(askPlayer(options))
@@ -170,13 +173,29 @@ def gameEnd(player,dealer,stand):
 
     if endGame == True:
         if win == True:
-            print(f"\nYou won {player}-{dealer}\nYour hand: {myHand}\nDealer's hand: {dealerHand}")
+            print(f"You won {player}-{dealer}\nYour hand: {myHand}\nDealer's hand: {dealerHand}")
         elif push == True:
-            print(f"\nGame pushed {player}-{dealer}\nYour hand: {myHand}\nDealer's hand: {dealerHand}")
+            print(f"Game pushed {player}-{dealer}\nYour hand: {myHand}\nDealer's hand: {dealerHand}")
         else:
-            print(f"\nYou lost {player}-{dealer}\nYour hand: {myHand}\nDealer's hand: {dealerHand}")
+            print(f"You lost {player}-{dealer}\nYour hand: {myHand}\nDealer's hand: {dealerHand}")
 
     return(endGame)
+
+def splitGame(listOfHands,dealer):
+    end = [False,False]
+    listOfOptions = [handOptions(listOfHands[0]),handOptions(listOfHands[1])]
+
+    listOfOptions[0].hit()
+    listOfOptions[1].hit()
+
+    print(f'Your first hand: {listOfHands[0]}')
+    print(f'Your second hand: {listOfHands[1]}')
+    while end.count(True) < 1:
+        for c in range(0,len(listOfHands)):
+            print(f'\nHand {c+1}:')
+            hands, stand, split = askPlayer(listOfOptions[c])
+            end[c] = gameEnd(listOfHands[c].handScore(), dealerHand.handScore(), stand)
+            print(f'Hand {c+1}: {listOfHands[0]}')
 
 if __name__ == '__main__':
     end = False
@@ -187,12 +206,15 @@ if __name__ == '__main__':
     options = handOptions(myHand)
     dealerHand = hand()
     gamePrep()
+    listOfHands = []
+    secondHand = []
 
     while(end == False):
         end = gameEnd(myHand.handScore(), dealerHand.handScore(),stand)
         if end != True:
-            print(f'Dealers hand = {dealerHand.cardsInHand[0]}')
-            print(f'Your hand = {myHand}')
-            myHand,stand = askPlayer(options)
-
-
+            print(f'Your hand = {myHand}')  # \nYour score: {myHand.handScore()}')
+            print(f'Dealers hand = {dealerHand.cardsInHand[0]}\n')
+            listOfHands,stand,split = askPlayer(options)
+            if split == True:
+                splitGame(listOfHands,dealerHand)
+                break
